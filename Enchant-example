@@ -1,0 +1,156 @@
+//新手在做的时候，难免会去写一些自己想要的附魔，而以下是玩家每刻触发的逻辑，也就是player..tick这个事件
+PlayerEvents.tick(event => {
+    const player = event.player
+    let mainhand = player.mainHandItem
+    let offhandItem = player.offhandItem
+    let chest = player.chestArmorItem
+    let head = player.headArmorItem
+    let legs = player.legsArmorItem
+    let boot = player.feetArmorItem
+//上面部分定义了玩家，和玩家的装备栏，主手或者副手的栏位
+    let asslevel = mainhand.getEnchantmentLevel('kubejs:arrow_super_strength')//这里定义了你主手上面附魔的等级。下面同理可以按照这个来写
+    if (mainhand.enchantments['kubejs:arrow_super_strength']) {
+        player.modifyAttribute('attributeslib:arrow_damage', 'www', asslevel * 4, "addition")//这里是当玩家主手有此附魔的武器时，那么就给玩家增加箭矢伤害“arrow_damage”下面同理，都是增加属性
+    }
+    let asylumlevel = chest.getEnchantmentLevel('kubejs:asylum')
+    if (chest.enchantments['kubejs:asylum']) {
+        player.modifyAttribute('minecraft:generic.max_health', 'asy_health', asylumlevel * 3, "addition")
+    } else {
+        player.removeAttribute('minecraft:generic.max_health', 'asy_health')
+    }
+    let speedarrowlevel = mainhand.getEnchantmentLevel('kubejs:speed_arrow')
+    if (mainhand.enchantments['kubejs:speed_arrow']) {
+        player.modifyAttribute('celestial_core:arrow_speed', 'speed_arrow', 0.1 * speedarrowlevel, "multiply_base")
+
+    } else {
+        player.removeAttribute('celestial_core:arrow_speed', 'speed_arrow')
+    }
+    let heavylevel = chest.getEnchantmentLevel('kubejs:heavy')
+    if (chest.enchantments['kubejs:heavy']) {
+        player.modifyAttribute('minecraft:generic.movement_speed', 'enchant:heavy', heavylevel * 0.05, 'multiply_base')
+    }
+    else {
+        player.removeAttribute('minecraft:generic.movement_speed', 'enchant:heavy')
+    }
+    let curse_fireLevel = mainhand.getEnchantmentLevel('kubejs:curse_fire')
+    if (mainhand.enchantments['kubejs:curse_fire']) {
+        player.modifyAttribute('attributeslib:fire_damage', 'enchant:curse_fire', curse_fireLevel * 2, 'addition')
+    }
+    else {
+        player.removeAttribute('attributeslib:fire_damage', 'enchant:curse_fire')
+    }
+    let unsharpnessLevel = mainhand.getEnchantmentLevel('kubejs:unsharpness')
+    if (mainhand.enchantments['kubejs:unsharpness']){
+        player.modifyAttribute('minecraft:generic.attack_damage','enchant:unsharpness',-unsharpnessLevel*2,"addition")
+    }else{
+        player.removeAttribute('minecraft:generic.attack_damage','enchant:unsharpness')
+    }
+    let slownessLevel=boot.getEnchantmentLevel('kubejs:slowness')
+    if(boot.enchantments['kubejs:slowness']){
+        player.modifyAttribute('minecraft:generic.movement_speed','enchant:slowness',-0.1,"addition")
+    }
+    else{
+        player.removeAttribute('minecraft:generic.movement_speed','enchant:slowness')
+    }
+
+})
+
+EntityEvents.hurt(event => {//这里是当玩家受伤的时候，会触发事件
+    const source = event.source.actual
+
+    if (!source || !source.isPlayer()) return
+    const entity = event.entity;
+    let mainhand = player.mainHandItem
+    let offhandItem = player.offhandItem
+    let chest = player.chestArmorItem
+    let head = player.headArmorItem
+    let legs = player.legsArmorItem
+    let boot = player.feetArmorItem
+
+    let lightning_additionLevel = mainhand.getEnchantmentLevel('kubejs:lightning_addition')
+    if (mainhand.enchantments['kubejs:lightning_addition'] && Math.random() < lightning_additionLevel * 0.1) {
+        let lightning = player.level.createEntity('jerotes:lightning_bolt')
+        lightning.setPos(entity.x, entity.y, entity.z)
+        lightning.setOwner(player)
+        lightning.spawn()
+    }
+
+
+})
+//以上全部代码均放在server_script文件夹中
+
+//以下代码全部放在startup_script文件夹中
+StartupEvents.registry('enchantment', event => {这里是注册附魔的逻辑
+    event.create('undead_protection')
+        .minLevel(1)
+        .maxLevel(3)
+        .armor()
+    event.create('warden_protection')
+        .minLevel(1)
+        .maxLevel(3)
+        .armor()
+    event.create('asylum')
+        .minLevel(1)
+        .maxLevel(5)
+        .armorChest()
+    event.create('snatched')
+        .minLevel(1)
+        .maxLevel(5)
+        .armor()
+        .curse()//是否为诅咒类型附魔
+    event.create('unsharpness')
+        .minLevel(1)//最小等级
+        .maxLevel(5)//最大等级
+        .weapon()
+        .curse()
+    event.create('slowness')
+        .minLevel(1)
+        .maxLevel(3)
+        .armorFeet()
+        .curse()
+    event.create('grass_heal')
+        .minLevel(1)
+        .maxLevel(3)
+        .armorFeet()
+
+
+    event.create('heavy')
+        .minLevel(1)
+        .maxLevel(3)
+        .armor()
+        .curse()
+
+
+    event.create('curse_fire')
+        .weapon()
+        .minLevel(1)
+        .maxLevel(4)
+
+
+    event.create('lightning_addition')
+        .minLevel(1)
+        .maxLevel(3)
+        .weapon()
+
+
+    event.create('arrow_super_strength')
+        .minLevel(1)
+        .maxLevel(5)
+        .bow()
+        .treasureOnly()
+        .canEnchant(item => {
+            if (item.hasTag('forge:tools/bows')) { return true }
+            else { return false }
+        })
+    event.create('speed_arrow')
+        .minLevel(1)
+        .maxLevel(4)
+        .treasureOnly()
+        .canEnchant(item => {
+            if (item.hasTag('forge:tools/bows')) { return true }//物品有特定标签时才能进行附魔
+            else { return false }
+        })
+
+
+})
+
