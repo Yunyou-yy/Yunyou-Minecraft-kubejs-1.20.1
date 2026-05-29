@@ -1,4 +1,5 @@
-ServerEvents.tags('item', event => {//为物品增加标签，可以通过物品的标签来写逻辑
+ServerEvents.tags('item', event => {//为物品增加标签，可以通过物品的标签来写逻辑，而饰品模组curiosapi可以通过标签来识别物品是否为饰品，例如：curios:xxx
+例如下界之星（nether_star），来实现将原版物品直接变为饰品
   event.add("tetra:swords", "celestisynth:celestial_netherite_ingot")
   event.add("seven:gems", "goety:soul_ruby")
   event.add("curios:spellstone", "enigmaticaddons:primeval_cube")
@@ -93,4 +94,76 @@ PlayerEvents.tick(event => {
 })
 
 
+})
+//以下是当玩家佩戴饰品时可触发的逻辑
+PlayerEvents.tick(event => {
+    const player = event.player
+
+    if (player.isCuriosEquipped('celesityreincarnation:tianshenzhizhu')) {
+        player.modifyAttribute('celestisynth:celestial_damage', 'tianshen', 3, "addition")
+        player.modifyAttribute('minecraft:generic.attack_damage', 'tianshen', 5, "addition")
+        player.modifyAttribute('minecraft:generic.attack_speed', 'tianshen', 1, "addition")
+
+
+    }
+    if (player.isCuriosEquipped('mowziesmobs:ice_crystal')) {
+        player.modifyAttribute('attributeslib:cold_damage', 'ice_crystal', 3, "addition")
+        player.modifyAttribute('minecraft:generic.max_health', 'ice_crystal', 0.05, "multiply_base")
+    } else {
+        player.removeAttribute('attributeslib:cold_damage', 'ice_crystal')
+        player.removeAttribute('minecraft:generic.max_health', 'ice_crystal')
+    }
+    if (player.isCuriosEquipped('born_in_chaos_v1:lifestealer_skull')) {
+        player.modifyAttribute('minecraft:generic.attack_damage', 'lifesteal_skull_damage', 0.05, 'multiply_base')
+
+    } else {
+        player.removeAttribute('minecraft:generic.attack_damage', 'lifesteal_skull_damage')
+    }
+    if (player.isCuriosEquipped('born_in_chaos_v1:dark_atrium')) {
+        player.modifyAttribute('l2damagetracker:damage_absorption', 'dark_atrium', 5, "addition")
+        player.modifyAttribute('minecraft:generic.max_health', 'dark_atrium', 5, "multiply_base")
+    } else {
+        player.removeAttribute('l2damagetracker:damage_absorption', 'dark_atrium')
+        player.removeAttribute('minecraft:generic.max_health', 'dark_atrium')
+    }
+    if (player.isCuriosEquipped('born_in_chaos_v1:nightmare_claw')) {
+        player.modifyAttribute('minecraft:generic.attack_speed', 'nightmare_claw_speed', 0.05, "multiply_base")
+        player.modifyAttribute('minecraft:generic.attack_damage', 'nightmare_claw_damage', 0.05, "multiply_base")
+
+    } else {
+        player.removeAttribute('minecraft:generic.attack_speed', 'night_claw_speed')
+        player.removeAttribute('minecraft:generic.attack_damage', 'nightmare_claw_damage')
+    }
+    if (player.isCuriosEquipped('born_in_chaos_v1:ethereal_spirit')) {
+        player.potionEffects.add('born_in_chaos_v1:light_rampage')
+    }
+    if (player.isCuriosEquipped('iceandfire:cyclops_eye')) {
+        getLivingWithinRadius(player.level, player.position(), 32).forEach(e => {
+            if (e.isMonster()) {
+                e.potionEffects.add('minecraft:weakness')
+            }
+        })
+    }
+    if (player.isCuriosEquipped('minecraft:nether_star')) {
+        player.heal(0.0125)//穿戴下界之星每tick回复0.0125血量
+
+    }
+    if (player.isCuriosEquipped('reincarnation:cursed_end')) {
+        player.modifyAttribute('l2damagetracker:damage_absorption', 'cursed_end', 10, 'addition')
+    } else {
+        player.removeAttribute('l2damagetracker:damage_absorption', 'cursed_end')
+    }
+    if (player.isCuriosEquipped('iceandfire:cockatrice_eye')) {
+        getLivingWithinRadius(player.level, player.position(), 32).forEach(e => {
+            if (e.isMonster()) {
+                e.potionEffects.add('minecraft:weakness')
+            }
+        })
+        player.modifyAttribute('minecraft:generic.attack_speed', 'cocaktrice_eye_damage_speed', 8, mutiply)
+    }
+    if (player.isCuriosEquipped('monsterexpansion:rhyza_gleam_core')) {
+        player.modifyAttribute('attributeslib:dodge_chance', 'rhyza_gleam_core', 0.1, "multiply_base")
+        player.modifyAttribute('attributeslib:armor_shred', 'rhyza_gleam_core', 0.1, "multiply_base")
+
+    }
 })
