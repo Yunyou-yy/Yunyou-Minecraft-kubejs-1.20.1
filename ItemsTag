@@ -1,0 +1,96 @@
+ServerEvents.tags('item', event => {//为物品增加标签，可以通过物品的标签来写逻辑
+  event.add("tetra:swords", "celestisynth:celestial_netherite_ingot")
+  event.add("seven:gems", "goety:soul_ruby")
+  event.add("curios:spellstone", "enigmaticaddons:primeval_cube")
+  event.add("curios:tuteng", "minecraft:totem_of_undying")
+  event.add("curios:tuteng", "born_in_chaos_v1:death_totem")
+  event.add("curios:tuteng", "enigmaticaddons:totem_of_malice")
+  event.add("curios:tuteng", "goety:totem_of_souls")
+  event.add("curios:tuteng", "goety:totem_of_roots")
+  event.add("curios:zhufu", "kubejs:cryingface")
+  event.add("curios:curio", " refinedstorageaddons:creative_wireless_crafting_grid")
+  event.add("curios:head", " refinedstorageaddons:creative_wireless_crafting_grid")
+  event.add("curios:charm", " refinedstorageaddons:creative_wireless_crafting_grid")
+  event.add('curios:spell_book', 'kubejs:spell_book')
+  event.add('curiso:gem', 'stellar_striker:the_community')
+  event.add('curios:heart', 'iceandfire:fire_dragon_heart')
+  event.add('curios:heart', 'iceandfire:ice_dragon_heart')
+  event.add('curios:heart', 'iceandfire:lightning_dragon_heart')
+  event.add('curios:heart', 'mowziesmobs:ice_crystal')
+  event.add('curios:head', 'born_in_chaos_v1:lifestealer_skull')
+  event.add('curios:heart', 'born_in_chaos_v1:dark_atrium')
+  event.add('curios:hands', 'born_in_chaos_v1:nightmare_claw')
+  event.add('curios:soul', 'born_in_chaos_v1:ethereal_spirit')
+  event.add('curios:eyes', 'iceandfire:cyclops_eye')
+  event.add('curios:gem', 'minecraft:nether_star')
+  event.add('curios:gem', 'goety_revelation:quietus_star')
+  event.add('curios:soul', 'soulsweapons:essence_of_eventide')
+
+  event.add("curios:gem", 'monsterexpansion:rhyza_gleam_core')
+  event.add('curios:head', 'mowziesmobs:sol_visage')
+  event.add('curios:head', 'mowziesmobs:wrought_helmet')
+  event.add('forge:weapons', 'minecraft:wooden_sword')
+  event.add('forge:weapons', 'minecraft:iron_sword')
+  event.add('forge:weapons', 'minecraft:diamond_sword')
+  event.add('forge:weapons', 'minecraft:netherite_sword')
+  event.add('forge:weapons', 'minecraft:stone_sword')
+  event.add('forge:weapons', 'minecraft:gold_sword')
+  event.add('forge:tools/bows', 'gobber2:gobber2_bow')
+  event.add('forge:tools/bows', 'gobber2:gobber2_bow_nether')
+  event.add('forge:tools/bows', 'soulsweapons:simons_bowblade')
+  event.add('forge:tools/bows', 'soulsweapons:darkmoon_longbow')
+  event.add('forge:tools/bows', 'soulsweapons:kraken_slayer_crossbow')
+  event.add('forge:tools/bows', 'soulsweapons:galeforce')
+  event.add('forge:tools/bows', 'soulsweapons:kraken_slayer')
+  event.add('forge:tools/bows', 'goety:hunters_bow')
+  event.add('forge:tools/bows', 'iceandfire:dragonbone_bow')
+  event.add('forge:tools/shields', 'minecraft:shield')
+  event.add('forge:tools/bows', 'tetra:modular_bow')
+  event.add('curios:skillscroll', 'reincarnation:ranger_skillbook')
+  event.add('curios:skillscroll', 'reincarnation:summoner_skillbook')
+  event.add('curios:skillscroll', 'reincarnation:warrior_skillbook')
+
+
+
+  event.remove('forge:tools/shields', 'jerotesvillage:rambler_leather_shield')
+  event.remove('forge:tools/shields', 'twilightforest:knightmetal_shield')
+  event.remove('forge:tools/shields', 'torchesbecomesunlight:guard_shield')
+  event.remove('forge:tools/shields', 'legendary_monsters:spiky_shield')
+  event.remove('forge:tools/shields', 'dreadsteel:dreadsteel_shield')
+  event.remove('forge:tools/shields', 'torchesbecomesunlight:shield')
+  event.remove('forge:tools/shields', 'torchesbecomesunlight:pathfinder_shield')
+  event.remove('forge:tools/shields', 'jerotesvillage:ancient_second_rounder_shield')
+  event.remove('forge:tools/shields', 'jerotesvillage:villager_metal_shield')
+  event.remove('forge:tools/shields', 'cataclysm:azure_sea_shield')
+  event.remove('forge:tools/shields', 'cataclysm:black_steel_targe')
+  event.remove('forge:tools/shields', 'torchesbecomesunlight:rhodes_shield')
+  event.remove('forge:tools/shields', 'legendary_monsters:shulker_shield')
+  event.remove('forge:tools/shields', 'legendary_monsters:dinosaur_bone_shield')
+  event.remove('forge:tools/shields', 'legendary_monsters:frostbitten_shield')
+  event.remove('forge:tools/shields', 'threateningly_mobs:ebonlord_shield')
+  event.remove('forge:tools/shields', 'threateningly_mobs:magma_shell_shield')
+  event.add('forge:tools/shields', '')
+  event.add('forge:tools/shields', '')
+  event.add('forge:tools/shields', '')
+  event.add('forge:tools/shields', '')
+
+
+PlayerEvents.tick(event => {
+    const player = event.player
+    if (!player.isPlayer()) return
+    const mainhand = player.mainHandItem//定义玩家主手物品
+
+    if (mainhand.hasTag('forge:tools/bows') ) {//通过主手是否含有某种标签，来为玩家后续增加属性
+        player.modifyAttribute('celestial_core:arrow_speed', 'toolbow_speed', 0.2, "multiply_base")
+        player.modifyAttribute('quality_equipment:projectile_damage', 'tool/bow_damage', 0.5, "multiply_base")
+        player.modifyAttribute('attributeslib:arrow_damage', 'tool/bow', 0.5, 'multiply_base')
+    }
+    else {//注意，玩家增加属性后，会出现，即使主手不是有特定标签，依然会有效果，为了解决这个问题，需要在玩家主手不是特定物品时，移除玩家增加的属性即可
+        player.removeAttribute('celestial_core:arrow_speed', 'toolbow_speed')
+        player.removeAttribute('quality_equipment:projectile_damage', 'tool/bow_damage')
+        player.removeAttribute('attributeslib:arrow_damage', 'tool/bow')
+    }
+})
+
+
+})
