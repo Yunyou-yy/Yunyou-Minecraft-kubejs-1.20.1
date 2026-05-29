@@ -1,0 +1,341 @@
+//此处实体死亡事件。写一个类似诡厄巫法的灵魂能量系统
+EntityEvents.death(event => {
+    const entity = event.entity;//定义死亡实体
+    const source = event.source;定义伤害来源
+
+    if (!source || !source.player) return;//若无来源则返回不触发
+    const player = source.player;
+
+
+    if (player.persistentData.mana === undefined) {
+        player.persistentData.mana = 100;//默认魔力值为100
+        player.persistentData.maxMana = 100;//最大魔力值为100
+        player.persistentData.baseMaxMana = 100;
+        player.persistentData.manaRegen = 2;
+        player.persistentData.killedBosses = {};//存储击杀的boss
+    }
+
+
+    const maxManaBonusTable = {
+        'minecraft:warden': 75,
+        'minecraft:wither': 80,
+        'minecraft:ender_dragon': 100,
+        'mowziesmobs:umvuthi': 50,
+        'mowziesmobs:frostmaw': 50,
+        'mowziesmobs:wroughtnaut': 50,
+        'legendary_monsters:posessed_paladin': 100,
+        'legendary_monsters:ancient_guardian': 100,
+        'legendary_monsters:dune_sentinel': 100,
+        'legendary_monsters:endersent': 100,
+        'legendary_monsters:shulker_mimic': 100,
+        'legendary_monsters:skeletosaurus': 100,
+        'legendary_monsters:withered_abomination': 100,
+        'legendary_monsters:lava_eater': 100,
+        'legendary_monsters:frostbitten_golem': 100,
+        'legendary_monsters:cloud_golem': 100,
+        'legendary_monsters:overgrown_colossus': 100,
+        'soulsweapons:draugr_boss': 100,
+        'threateningly_mobs:basalt_wyvern': 100,
+        'legionary:unbreakable': 100,
+        'born_in_chaos_v1:lord_pumpkinhead': 100,
+        'goety:wither_necromancer': 100,
+        'goety:crone': 100,
+        'goety:hostile_redstone_monstrosity': 100,
+        'goety:skull_lord': 100,
+        'goety:brood_mother': 100,
+        'goety:wight': 100,
+        'goety:minister': 100,
+        'twilightforest:minoshroom': 100,
+        'meetyourfight:rosalyne': 100,
+        'twilightforest:ur_ghast': 100,
+        'twilightforest:hydra': 100,
+        'twilightforest:snow_queen': 100,
+        'twilightforest:alpha_yeti': 100,
+        'threateningly_mobs:lich_re': 100,
+        'threateningly_mobs:re_rock_snail': 100,
+        'mowziesmobs:naga': 100,
+        'threateningly_mobs:the_inferno': 100,
+        'soulsweapons:returning_knight': 100,
+        'threateningly_mobs:hydra': 100,
+        'better_minoshroomtaur:better_minoshroomtaur': 100,
+        'threateningly_mobs:steelboar': 100,
+        'prehistoricexploration:zombifaurus': 100,
+        'jerotesvillage:corrosiver': 100,
+        'jerotesvillage:ominous_banner_projection': 100,
+        'jerotesvillage:meror_monstrosity': 100,
+        'jerotesvillage:meror_champion': 100,
+        'jerotesvillage:sediment_lord': 100,
+        'jerotesvillage:purple_sand_hag': 100,
+        'jerotesvillage:prosperous_envoy': 100,
+        'jerotesvillage:bright_land_beast': 100,
+        'jerotesvillage:serpon_combat_executer': 100,
+        'jerotesvillage:tyrant_of_the_mountain_realm': 100,
+        'jerotesvillage:gemstone_malignasaur': 100,
+        'threateningly_mobs:terra_dragon_re': 100,
+        'threateningly_mobs:abyss_fang': 100,
+        'jerotesvillage:second_rounder_golem': 100,
+
+        'torchesbecomesunlight:frost_nova': 100,
+        'torchesbecomesunlight:patriot': 100,
+        'torchesbecomesunlight:rosmontis': 100,
+        'torchesbecomesunlight:pursuer': 100,
+        'torchesbecomesunlight:gun_patriot': 100,
+
+
+        'bosses_of_mass_destruction:lich': 100,
+        'bosses_of_mass_destruction:gauntlet': 100,
+
+
+        'labyrinth:jesterknight': 100,
+        'labyrinth:examiner': 100,
+        'labyrinth:furious': 100,
+        'labyrinth:researcher': 100,
+        'labyrinth:apostolus': 100,
+
+
+        'meetyourfight:bellringer': 100,
+        'meetyourfight:swampjaw': 100,
+
+
+        'eeeabsmobs:nameless_guardian': 100,
+        'eeeabsmobs:corpse_warlock': 100,
+
+
+        'goety:vizier': 100,
+
+
+        'illagerinvasion:invoker': 100,
+
+
+        'soulsweapons:chaos_monarch': 100,
+        'soulsweapons:accursed_lord_boss': 100,
+
+
+        'infinitygolem:infinity_golem': 100,
+
+
+        'graveyard:lich': 100,
+    };//击杀boss生物获得的能量上限
+
+    const mobManaTable = {
+
+        'minecraft:chicken': 1,
+        'minecraft:cow': 2,
+        'minecraft:pig': 2,
+        'minecraft:strider': 3,
+        'born_in_chaos_v1:decrepit_skeleton': 6,
+        'born_in_chaos_v1:baby_skeleton': 5,
+        'born_in_chaos_v1:siamese_skeletons': 7,
+        'born_in_chaos_v1:decaying_zombie': 6,
+        'born_in_chaos_v1:barrel_zombie': 7,
+        'born_in_chaos_v1:door_knight': 7,
+        'born_in_chaos_v1:zombie_clown': 6,
+        'born_in_chaos_v1:zombie_lumberjack': 6,
+        'born_in_chaos_v1:dread_hound': 7,
+        'born_in_chaos_v1:maggot': 4,
+        'born_in_chaos_v1:corpse_fly': 5,
+        'born_in_chaos_v1:bloody_gadfly': 6,
+        'born_in_chaos_v1:swarmer': 6,
+        'born_in_chaos_v1:diamond_termite': 8,
+        'born_in_chaos_v1:firelight': 6,
+        'born_in_chaos_v1:mother_spider': 7,
+        'born_in_chaos_v1:bonescaller': 15,
+        'born_in_chaos_v1:skeleton_thrasher': 14,
+        'born_in_chaos_v1:skeleton_demoman': 13,
+        'born_in_chaos_v1:spirit_guide': 16,
+        'born_in_chaos_v1:zombie_bruiser': 14,
+        'born_in_chaos_v1:lifestealer': 28,
+        'born_in_chaos_v1:supreme_bonescaller': 32,
+        'born_in_chaos_v1:fallen_chaos_knight': 35,
+        'born_in_chaos_v1:thornshell_crab': 7,
+        'born_in_chaos_v1:corpse_fish': 5,
+        'born_in_chaos_v1:glutton_fish': 6,
+        'born_in_chaos_v1:restless_spirit': 8,
+        'born_in_chaos_v1:scarlet_persecutor': 8,
+        'born_in_chaos_v1:phantom_creeper': 9,
+        'born_in_chaos_v1:dark_vortex': 7,
+        'born_in_chaos_v1:spiritof_chaos': 8,
+        'born_in_chaos_v1:pumpkin_spirit': 6,
+        'born_in_chaos_v1:seared_spirit': 7,
+        'born_in_chaos_v1:senor_pumpkin': 18,
+        'born_in_chaos_v1:missioner': 30,
+        'born_in_chaos_v1:nightmare_stalker': 32,
+        'born_in_chaos_v1:dire_hound_leader': 28,
+        'born_in_chaos_v1:mr_pumpkin': 25,
+        'born_in_chaos_v1:sir_pumpkinhead': 40,
+        'born_in_chaos_v1:lord_pumpkinhead': 55,
+        'minecraft:zombie': 3,
+        'minecraft:zombie_villager': 4,
+        'minecraft:husk': 4,
+        'minecraft:skeleton': 5,
+        'minecraft:spider': 5,
+        'minecraft:cave_spider': 6,
+        'minecraft:piglin': 6,
+        'minecraft:creeper': 8,
+        'minecraft:stray': 7,
+        'minecraft:magma_cube': 6,
+
+
+        'minecraft:enderman': 10,
+        'minecraft:blaze': 12,
+        'minecraft:guardian': 14,
+        'minecraft:pillager': 8,
+        'minecraft:witch': 15,
+        'minecraft:shulker': 14,
+        'guardvillagers:illusioner': 16,
+
+
+        'minecraft:vindicator': 20,
+        'minecraft:evoker': 30,
+        'minecraft:piglin_brute': 25,
+        'minecraft:ravager': 35,
+        'minecraft:hoglin': 18,
+        'minecraft:zoglin': 22,
+        'minecraft:wither_skeleton': 20,
+
+
+        'minecraft:warden': 60,
+        'minecraft:wither': 80,
+        'minecraft:ender_dragon': 100,
+        'mowziesmobs:umvuthi': 50,
+        'mowziesmobs:frostmaw': 50,
+        'legendary_monsters:posessed_paladin': 100,
+        'legendary_monsters:ancient_guardian': 100,
+        'legendary_monsters:dune_sentinel': 100,
+        'legendary_monsters:endersent': 100,
+        'legendary_monsters:shulker_mimic': 100,
+        'legendary_monsters:skeletosaurus': 100,
+        'legendary_monsters:withered_abomination': 100,
+        'legendary_monsters:lava_eater': 100,
+        'legendary_monsters:frostbitten_golem': 100,
+        'legendary_monsters:cloud_golem': 100,
+        'legendary_monsters:overgrown_colossus': 100,
+        'soulsweapons:draugr_boss': 100,
+        'threateningly_mobs:basalt_wyvern': 100,
+        'legionary:unbreakable': 100,
+        'born_in_chaos_v1:lord_pumpkinhead': 100,
+        'goety:wither_necromancer': 100,
+        'goety:crone': 100,
+        'goety:hostile_redstone_monstrosity': 100,
+        'goety:skull_lord': 100,
+        'goety:brood_mother': 100,
+        'goety:wight': 100,
+        'goety:minister': 100,
+        'twilightforest:minoshroom': 100,
+        'meetyourfight:rosalyne': 100,
+        'twilightforest:ur_ghast': 100,
+        'twilightforest:hydra': 100,
+        'twilightforest:snow_queen': 100,
+        'twilightforest:alpha_yeti': 100,
+        'threateningly_mobs:lich_re': 100,
+        'threateningly_mobs:re_rock_snail': 100,
+        'mowziesmobs:naga': 100,
+        'threateningly_mobs:the_inferno': 100,
+        'soulsweapons:returning_knight': 100,
+        'threateningly_mobs:hydra': 100,
+        'better_minoshroomtaur:better_minoshroomtaur': 100,
+        'threateningly_mobs:steelboar': 100,
+        'prehistoricexploration:zombifaurus': 100,
+        'jerotesvillage:corrosiver': 100,
+        'jerotesvillage:ominous_banner_projection': 100,
+        'jerotesvillage:meror_monstrosity': 100,
+        'jerotesvillage:meror_champion': 100,
+        'jerotesvillage:sediment_lord': 100,
+        'jerotesvillage:purple_sand_hag': 100,
+        'jerotesvillage:prosperous_envoy': 100,
+        'jerotesvillage:bright_land_beast': 100,
+        'jerotesvillage:serpon_combat_executer': 100,
+        'jerotesvillage:tyrant_of_the_mountain_realm': 100,
+        'jerotesvillage:gemstone_malignasaur': 100,
+        'threateningly_mobs:terra_dragon_re': 100,
+        'threateningly_mobs:abyss_fang': 100,
+        'jerotesvillage:second_rounder_golem': 100,
+
+        'torchesbecomesunlight:frost_nova': 100,
+        'torchesbecomesunlight:patriot': 100,
+        'torchesbecomesunlight:rosmontis': 100,
+        'torchesbecomesunlight:pursuer': 100,
+        'torchesbecomesunlight:gun_patriot': 100,
+
+
+        'bosses_of_mass_destruction:lich': 100,
+        'bosses_of_mass_destruction:gauntlet': 100,
+
+
+        'labyrinth:jesterknight': 100,
+        'labyrinth:examiner': 100,
+        'labyrinth:furious': 100,
+        'labyrinth:researcher': 100,
+        'labyrinth:apostolus': 100,
+
+
+        'meetyourfight:bellringer': 100,
+        'meetyourfight:swampjaw': 100,
+
+
+        'eeeabsmobs:nameless_guardian': 100,
+        'eeeabsmobs:corpse_warlock': 100,
+
+
+        'goety:vizier': 100,
+
+
+        'illagerinvasion:invoker': 100,
+
+
+        'soulsweapons:chaos_monarch': 100,
+        'soulsweapons:accursed_lord_boss': 100,
+
+
+        'infinitygolem:infinity_golem': 100,
+
+
+        'graveyard:lich': 100,
+    };//击杀生物获得的能量（可修改）
+    const bonus = maxManaBonusTable[entity.type];
+    if (bonus !== undefined) {
+        if (!player.persistentData.killedBosses) {
+            player.persistentData.killedBosses = {};
+        }
+        const bossKey = entity.type.replace('minecraft:', '');
+
+
+        if (!player.persistentData.killedBosses[bossKey]) {
+            player.persistentData.killedBosses[bossKey] = true;
+            const currentMax = player.persistentData.maxMana;
+            const newMax = currentMax + bonus;
+            player.persistentData.maxMana = newMax;
+            player.tell(`§6 击杀Boss！魔源上限提升 +${bonus}`);
+            player.tell(`§b当前上限: ${newMax}！`);
+        } else {
+
+            player.tell(`§7你已经击杀过 ${entity.displayName.getString()}，不再获得上限奖励`);
+        }
+
+    }
+
+    const manaReward = mobManaTable[entity.type];
+    if (manaReward === undefined) return;
+
+    let finalReward = manaReward;
+
+
+    if (Math.random() < 0.2) {
+        finalReward = Math.floor(manaReward * 2);
+        player.tell(`§6 暴击！获得 ${finalReward} 魔源（双倍）`);
+    }
+
+    const current = player.persistentData.mana;
+    const max = player.persistentData.maxMana;
+
+
+
+    const newMana = Math.min(current + finalReward, max);
+
+    player.persistentData.mana = newMana;
+
+
+
+
+});
+
