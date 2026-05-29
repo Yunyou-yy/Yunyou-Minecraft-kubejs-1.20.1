@@ -1,0 +1,15 @@
+//指定玩家当拥有某个标签时，攻击增加额外伤害
+NativeEvents.onEvent($LivingHurtEvent, (event) => {
+  let { amount, source, entity } = event;
+  let { player } = source;
+  if (player && source.getType() == "player") {
+    let attribute1 = player.getAttributeTotalValue(//这里是拿到玩家的攻击总属性
+      "minecraft:generic.attack_damage",
+    );
+    let attribute2 = player.getAttributeTotalValue("minecraft:generic.armor");//这里是玩家的防御总属性
+    let total = attribute1 + attribute2;//这里讲上面两种属性添加为总和属性
+    if (player.getTags().contains("attackandarmor_study")) {//判断玩家包含的标签（可自定义）
+      event.setAmount(total + amount);//将事件伤害设定为总属性和+原始伤害，来达到增加伤害的目的
+    }
+  }
+});
