@@ -1,0 +1,125 @@
+//通过右键事件，触发一个从天而降的闪电效果（需要模组iceandfire，cataclysm）不用也可以但是需要自行修改逻辑
+
+
+function getLivingWithinRadius(level, pos, radius) {//获取某个半径的生物函数
+    if (!level || !pos || !radius) return [];
+
+    try {
+        let area = new AABB.of(
+            pos.x() - radius, pos.y() - radius, pos.z() - radius,
+            pos.x() + radius, pos.y() + radius, pos.z() + radius
+        );
+        if (!area) return [];
+
+        let entityAABBList = level.getEntitiesWithin(area);
+        if (!entityAABBList) return [];
+
+        let entityList = [];
+        entityAABBList.forEach(entity => {
+            if (entity && entity.position && entity.isLiving &&
+                entity.position().distanceTo(pos) <= radius) {
+                entityList.push(entity);
+            }
+        });
+        return entityList;
+    } catch (e) {
+        console.error("getLivingWithinRadius error:", e);
+        return [];
+    }
+}
+
+ItemEvents.rightClicked(event => {
+    let { player, level, item } = event;
+    let head = player.headArmorItem;
+    let chest = player.chestArmorItem;
+    let legs = player.legsArmorItem;
+    let boots = player.feetArmorItem;
+
+
+    if (item.id !== 'iceandfire:dragonbone_sword_lightning') return;//主手不是龙霆骨血剑时就返回不执行后面
+
+
+
+
+    const isAmethystSet =//定义玩家的套装（看看是否是全套龙鳞套）颜色是晶紫
+        head.id === 'iceandfire:armor_amethyst_helmet' &&
+        chest.id === 'iceandfire:armor_amethyst_chestplate' &&
+        legs.id === 'iceandfire:armor_amethyst_leggings' &&
+        boots.id === 'iceandfire:armor_amethyst_boots';
+
+
+    const isBasic = !isAmethystSet;
+
+
+    if (!isAmethystSet && !isBasic) return;
+
+
+    let config;
+    if (isAmethystSet) {//有全套时执行以下逻辑
+        config = {
+            radius: 32,
+            cost: 15,
+            damageMult: 0.009,
+            damageBase: 12,
+            cooldown: 160,
+            msg: '§b紫水晶共鸣！电龙审判·极！'
+        };
+    } else {//否则执行以下
+
+        config = {
+            radius: 20,
+            cost: 20,
+            damageMult: 0.005,
+            damageBase: 9.5,
+            cooldown: 200,
+            msg: '§b释放技能！'
+        };
+    }
+
+
+
+    if (player.persistentData.getBoolean('dragonbone_sword_lightning_cool')) {
+        player.tell('电龙审判冷却中');
+        return;
+    }
+
+
+    if (player.persistentData.mana === undefined) {
+        player.tell('§c魔源系统未激活！');
+        return;
+    }
+
+    let currentMana = player.persistentData.mana;
+    if (currentMana < config.cost) {
+        player.tell(`§c魔源不足！需要 ${config.cost} 点，当前 ${currentMana} 点`);
+        return;
+    }
+
+
+    let entityInRadius = getLivingWithinRadius(level, player.position(), config.radius);//getlivingwithinradius是一个函数上面定义了
+    let monsters = entityInRadius.filter(e => !e.isPlayer() && e.isMonster());
+
+    if (monsters.length === 0) {
+        player.tell('§c范围内没有可攻击的目标！');
+        return;
+    }
+
+
+    player.persistentData.mana = currentMana - config.cost;//减少玩家的魔力值
+
+    player.persistentData.putBoolean('dragonbone_sword_lightning_cool', true);//为玩家增加冷却
+    event.server.scheduleInTicks(config.cooldown, () => {
+        player.persistentData.remove('dragonbone_sword_lightning_cool');
+    });
+
+
+    monsters.forEach(e => {
+        e.invulnerableTime = 0;//生物无敌针设置为0，不让伤害丢失
+        let damage = e.getMaxHealth() * config.damageMult + config.damageBase;
+        e.attack(player.damageSources().lightningBolt(), damage);
+
+        const lightning = level.createEntity('minecraft:lightning_bolt');//创建闪电
+        lightning.setPos(e.x, e.y, e.z);//设置闪电位置在怪物的下方
+        lightning.spawn();//生成闪电
+    });
+});
