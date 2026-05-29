@@ -1,0 +1,25 @@
+//以下代码是当玩家死亡后触发的事件，复制即可使用
+let minecraft = Java.loadClass('net.minecraft.client.Minecraft')
+
+
+EntityEvents.death('player', event => {//定义死亡的实体是玩家
+    const player = event.player
+
+    if (player.tags.contains('fire_ring_cool')) return//如果玩家标签包含'fire_ring_cool'时就直接返回不执行下面的逻辑
+
+
+    if (player.isCuriosEquipped('kubejs:fire_ring')) {//检测玩家佩戴的饰品（可自定义）
+        player.setHealth(30)//让玩家血量设定在30
+        minecraft.getInstance().gameRenderer.displayItemActivation('kubejs:fire_ring')//像不死图腾一样渲染在屏幕上面
+        player.level.spawnParticles("minecraft:totem_of_undying", false, event.entity.x, event.entity.y, event.entity.z, 0, 0, 0, 150, 5)//发出不死图腾的粒子效果
+        player.sendSystemMessage(Text.green('火龙龙牺牲了自己，你回复30点血量！'));//发送消息给玩家
+        player.tags.add('fire_ring_cool')//为玩家添加冷却，在上文说了，有这个标签的玩家就不会触发复活逻辑
+        event.server.scheduleInTicks(20 * 30, () => {
+            player.tags.remove('fire_ring_cool')//过了30秒就消除这个标签。则玩家可以继续复活
+        })
+        event.cancel()
+
+
+
+    }
+})
